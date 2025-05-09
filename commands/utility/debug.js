@@ -1,3 +1,10 @@
+// Includes:
+// - pinging the bot
+// - echoing a message
+// - user info
+// - server info
+// - API pinging.
+
 const { SlashCommandBuilder } = require('discord.js');
 
 module.exports = {
@@ -23,11 +30,25 @@ module.exports = {
         .addSubcommand(subcommand =>
             subcommand
                 .setName('server')
-                .setDescription('Get information about the server')),
+                .setDescription('Get information about the server'))
+        .addSubcommand(subcommand =>
+            subcommand
+                .setName('api')
+                .setDescription('ping different APIs')),
 
+// ////////////////////////////////////
+//
+// Execute function
+//
+// ////////////////////////////////////
     async execute(interaction) {
         if (interaction.options.getSubcommand() === 'ping') {
-            await interaction.reply('Pong!');
+            const sent = await interaction.reply({ content: 'Pinging...', fetchReply: true });
+            const latency = sent.createdTimestamp - interaction.createdTimestamp;
+
+            const apiLatency = Math.round(interaction.client.ws.ping);
+
+            await interaction.editReply(`Pong! Latency: ${latency}ms, API Latency: ${apiLatency}ms`);
         }
         else if (interaction.options.getSubcommand() === 'echo') {
             const message = interaction.options.getString('message');
@@ -38,6 +59,9 @@ module.exports = {
         }
         else if (interaction.options.getSubcommand() === 'server') {
             await interaction.reply(`Server: ${interaction.guild.name}\nTotal members: ${interaction.guild.memberCount}`);
+        }
+        else if (interaction.options.getSubcommand() === 'api') {
+            await interaction.reply('Not implemented yet!');
         }
     },
 };
