@@ -1,13 +1,13 @@
-//                                           _           _ _____             _    
-//     /\                                   | |         | |  __ \           | |   
+//                                           _           _ _____             _
+//     /\                                   | |         | |  __ \           | |
 //    /  \  _   _  __ _ _ __ ___   ___ _ __ | |_ ___  __| | |  | |_   _  ___| | __
 //   / /\ \| | | |/ _` | '_ ` _ \ / _ \ '_ \| __/ _ \/ _` | |  | | | | |/ __| |/ /
-//  / ____ \ |_| | (_| | | | | | |  __/ | | | ||  __/ (_| | |__| | |_| | (__|   < 
+//  / ____ \ |_| | (_| | | | | | |  __/ | | | ||  __/ (_| | |__| | |_| | (__|   <
 // /_/    \_\__,_|\__, |_| |_| |_|\___|_| |_|\__\___|\__,_|_____/ \__,_|\___|_|\_\
-//                 __/ |                                                          
-//                |___/                                                           
+//                 __/ |
+//                |___/
 //
-// + - + - + - + - + - + - + - + - + - + - + 
+// + - + - + - + - + - + - + - + - + - + - +
 // | F | R | I | D | A | Y |   | B | O | T |
 // + - + - + - + - + - + - + - + - + - + - +
 //
@@ -18,20 +18,21 @@ const path = require('node:path');
 const { Client, Collection, GatewayIntentBits } = require('discord.js');
 const { token } = require('./.secrets/config.json');
 
-//////////////////////////////////
+// ////////////////////////////////
 // LOGIN TO DISCORD
-//////////////////////////////////
+// ////////////////////////////////
 const client = new Client({ intents: [GatewayIntentBits.Guilds] });
 
 try {
     client.login(token);
-} catch (error) {
+}
+catch (error) {
     console.error('Error logging in:', error);
 }
 
-//////////////////////////////////
+// ////////////////////////////////
 // COMMAND HANDLER
-//////////////////////////////////
+// ////////////////////////////////
 client.commands = new Collection();
 
 const folderPath = path.join(__dirname, 'commands');
@@ -47,7 +48,8 @@ for (const folder of commandFolders) {
 
         if ('data' in command && 'execute' in command) {
             client.commands.set(command.data.name, command);
-        } else {
+        }
+        else {
             console.log(`[WARNING] The command at ${filePath} is missing a required "data" or "execute" property.`);
         }
     }
