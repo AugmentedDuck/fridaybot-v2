@@ -1,0 +1,19 @@
+{
+  "name": "fridaybot-v2",
+  "version": "1.0.0",
+  "description": "a discord bot",
+  "main": "bot.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AugmentedDuck/fridaybot-v2.git"
+  },
+  "author": "AugmentedDuck",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/AugmentedDuck/fridaybot-v2/issues"
+  },
+  "homepage": "https://github.com/AugmentedDuck/fridaybot-v2#readme"
+}
