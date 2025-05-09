@@ -1,4 +1,21 @@
-const { Client, Events, GatewayIntentBits } = require('discord.js');
+//                                           _           _ _____             _    
+//     /\                                   | |         | |  __ \           | |   
+//    /  \  _   _  __ _ _ __ ___   ___ _ __ | |_ ___  __| | |  | |_   _  ___| | __
+//   / /\ \| | | |/ _` | '_ ` _ \ / _ \ '_ \| __/ _ \/ _` | |  | | | | |/ __| |/ /
+//  / ____ \ |_| | (_| | | | | | |  __/ | | | ||  __/ (_| | |__| | |_| | (__|   < 
+// /_/    \_\__,_|\__, |_| |_| |_|\___|_| |_|\__\___|\__,_|_____/ \__,_|\___|_|\_\
+//                 __/ |                                                          
+//                |___/                                                           
+//
+// + - + - + - + - + - + - + - + - + - + - + 
+// | F | R | I | D | A | Y |   | B | O | T |
+// + - + - + - + - + - + - + - + - + - + - +
+//
+
+const fs = require('node:fs');
+const path = require('node:path');
+
+const { Client, Collection, Events, GatewayIntentBits } = require('discord.js');
 const { token } = require('./.secrets/config.json');
 
 //////////////////////////////////
