@@ -1,13 +1,13 @@
 const js = require('@eslint/js');
 
 module.exports = [
-    js.config.recommended,
-    {
-        languageOptions: {
-            ecmaVersion: 'latest',
-        },
-        rules: {
-            'arrow-spacing': ['warn', { before: true, after: true }],
+	js.configs.recommended,
+	{
+		languageOptions: {
+			ecmaVersion: 'latest',
+		},
+		rules: {
+			'arrow-spacing': ['warn', { before: true, after: true }],
 			'brace-style': ['error', 'stroustrup', { allowSingleLine: true }],
 			'comma-dangle': ['error', 'always-multiline'],
 			'comma-spacing': 'error',
@@ -15,7 +15,6 @@ module.exports = [
 			curly: ['error', 'multi-line', 'consistent'],
 			'dot-location': ['error', 'property'],
 			'handle-callback-err': 'off',
-			indent: ['error', 'tab'],
 			'keyword-spacing': 'error',
 			'max-nested-callbacks': ['error', { max: 4 }],
 			'max-statements-per-line': ['error', { max: 2 }],
@@ -45,6 +44,6 @@ module.exports = [
 			'space-unary-ops': 'error',
 			'spaced-comment': 'error',
 			yoda: 'error',
-        },
-    },
+		},
+	},
 ];
