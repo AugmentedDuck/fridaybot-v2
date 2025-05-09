@@ -15,5 +15,8 @@
   "bugs": {
     "url": "https://github.com/AugmentedDuck/fridaybot-v2/issues"
   },
-  "homepage": "https://github.com/AugmentedDuck/fridaybot-v2#readme"
+  "homepage": "https://github.com/AugmentedDuck/fridaybot-v2#readme",
+  "dependencies": {
+    "discord.js": "^14.19.3"
+  }
 }
