@@ -265,9 +265,6 @@ module.exports = {
                 await interaction.editReply('Error fetching image');
             }
         }
-        else {
-            await interaction.reply('This command is not implemented yet.');
-        }
     },
 };
 
