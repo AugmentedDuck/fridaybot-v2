@@ -24,7 +24,8 @@ module.exports = {
                 .setName('echo')
                 .setDescription('Echo a message')
                 .addStringOption(option =>
-                    option.setName('message')
+                    option
+                        .setName('message')
                         .setDescription('The message to echo')
                         .setRequired(true)))
         .addSubcommand(subcommand =>
