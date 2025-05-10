@@ -131,3 +131,6 @@ dist
 
 # secrets
 .secrets/
+
+# temporary files
+temp/

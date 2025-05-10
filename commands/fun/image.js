@@ -1,10 +1,14 @@
 // MISSING: AI generated image
 
-const { SlashCommandBuilder } = require('discord.js');
+const { SlashCommandBuilder, AttachmentBuilder } = require('discord.js');
 
 const gis = require('async-g-i-s');
+const fs = require('fs');
 
 const waifuAPI = 'https://api.waifu.im/search';
+
+// This requires stable-diffusion to be running and the API to be set up; (LOCALHOST)
+const stableDiffusionAPI = 'http://127.0.0.1:7860/sdapi/v1/txt2img';
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -28,7 +32,49 @@ module.exports = {
                     option
                         .setName('prompt')
                         .setDescription('The prompt to generate the image')
-                        .setRequired(true)))
+                        .setRequired(true))
+                .addIntegerOption(option =>
+                    option
+                        .setName('width')
+                        .setDescription('The width of the image')
+                        .setMinValue(512)
+                        .setMaxValue(1024)
+                        .setRequired(true))
+                .addIntegerOption(option =>
+                    option
+                        .setName('height')
+                        .setDescription('The height of the image')
+                        .setMinValue(512)
+                        .setMaxValue(1024)
+                        .setRequired(true))
+                .addIntegerOption(option =>
+                    option
+                        .setName('steps')
+                        .setDescription('The number of steps to generate the image')
+                        .setMinValue(1)
+                        .setMaxValue(50)
+                        .setRequired(true))
+                .addBooleanOption(option =>
+                    option
+                        .setName('anime')
+                        .setDescription('Is this an anime image?')
+                        .setRequired(true))
+                .addStringOption(option =>
+                    option
+                        .setName('negative-prompt')
+                        .setDescription('The negative prompt to generate the image'))
+                .addIntegerOption(option =>
+                    option
+                        .setName('seed')
+                        .setDescription('The seed to generate the image')
+                        .setMinValue(1)
+                        .setMaxValue(1000000000))
+                .addIntegerOption(option =>
+                    option
+                        .setName('cfg-scale')
+                        .setDescription('The CFG scale to generate the image')
+                        .setMinValue(1)
+                        .setMaxValue(30)))
         // This connects to https://api.waifu.im/
         .addSubcommand(subcommand =>
             subcommand
@@ -142,6 +188,73 @@ module.exports = {
             }
 
             await interaction.editReply(await getWaifuImage(tag, true));
+        }
+        // ////////////////////////////
+        //
+        // AI
+        //
+        // ////////////////////////////
+        else if (interaction.options.getSubcommand() === 'ai') {
+            const prompt = interaction.options.getString('prompt');
+            const width = interaction.options.getInteger('width');
+            const height = interaction.options.getInteger('height');
+            const steps = interaction.options.getInteger('steps');
+            const isAnime = interaction.options.getBoolean('anime');
+            let seed = interaction.options.getInteger('seed');
+            let cfgScale = interaction.options.getInteger('cfg-scale');
+            let negativePrompt = interaction.options.getString('negative-prompt');
+
+            seed = seed ? seed : -1;
+            cfgScale = cfgScale ? cfgScale : 7;
+            negativePrompt = negativePrompt ? negativePrompt : '';
+
+            const model = isAnime ? 'ponyDiffusionV6XL_v6StartWithThisOne' : 'epicphotogasm_ultimateFidelity';
+
+            await interaction.deferReply();
+
+            const payload = {
+                'prompt': prompt,
+                'negative_prompt': negativePrompt,
+                'width': width,
+                'height': height,
+                'steps': steps,
+                'seed': seed,
+                'cfg_scale': cfgScale,
+                'override_settings': {
+                    'sd_model_checkpoint': model,
+                },
+            };
+
+            try {
+                const response = await fetch(stableDiffusionAPI, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(payload),
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+
+                const imageData = data.images[0];
+
+                fs.writeFile('./temp/image.png', imageData, 'base64', (err) => {
+                    if (err) {
+                        throw err;
+                    }
+                });
+
+                const attachment = new AttachmentBuilder('./temp/image.png', { name: 'image.png' });
+                await interaction.editReply({ content: 'Here is your image:', files: [attachment] });
+            }
+            catch (error) {
+                console.error('Error fetching image:', error);
+                await interaction.editReply('Error fetching image');
+            }
         }
         else {
             await interaction.reply('This command is not implemented yet.');

@@ -9,7 +9,8 @@ const { SlashCommandBuilder } = require('discord.js');
 
 const { botMods } = require('../../.secrets/botMods.json');
 
-const APIs = [ { name: 'waifu.im', url: 'https://api.waifu.im/tags' } ];
+const APIs = [{ name: 'waifu.im', url: 'https://api.waifu.im/tags' },
+              { name: 'stable diffusion (localhost)', url: 'http://127.0.0.1:7860/info' }];
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -79,7 +80,7 @@ module.exports = {
                         apiResults += (`${api.name}: ${response.status} (${response.statusText})`);
                     }
                     catch (error) {
-                        apiResults += (`${api.name}: Error: ${error.message}`);
+                        apiResults += (`${api.name}: ${error.message}`);
                     }
                 }
 
