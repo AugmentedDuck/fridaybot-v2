@@ -1,5 +1,3 @@
-// Respond with a joke
-
 const { SlashCommandBuilder } = require('discord.js');
 
 const jokeAPI = 'https://v2.jokeapi.dev/joke/Any';
