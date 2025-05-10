@@ -9,7 +9,7 @@
 // - Clear the queue
 // - Shuffle the queue
 
-const { joinVoiceChannel, AudioPlayerStatus, createAudioPlayer, createAudioResource, StreamType } = require('@discordjs/voice');
+const { joinVoiceChannel, AudioPlayerStatus, createAudioPlayer, createAudioResource, StreamType, getVoiceConnection, VoiceConnectionStatus } = require('@discordjs/voice');
 const { SlashCommandBuilder, ChannelType } = require('discord.js');
 // const fs = require('fs');
 
@@ -134,13 +134,10 @@ async function moveSongToCurrentAndPlay() {
 
     downloadSong(currentSong);
 
-    const resource = createAudioResource('D:\\Users\\ander\\Documents\\GitHub\\fridaybot-v2\\currentSong.mp3', { inputType: StreamType.Arbitrary });
-
-    player.play(resource);
+    const resource = createAudioResource('./temp/currentSong.mp3');
 
     connection.subscribe(player);
-
-    console.log(resource);
+    player.play(resource);
 
 }
 
@@ -156,7 +153,6 @@ function createConnection(interaction) {
             guildId: interaction.guildId,
             adapterCreator: interaction.guild.voiceAdapterCreator,
         });
-
     }
     catch (error) {
         console.error(error);
@@ -166,7 +162,7 @@ function createConnection(interaction) {
 player.on(AudioPlayerStatus.Idle, async () => {
     console.log('Switching Song');
     try {
-        // fs.rmSync('./temp/currentSong.mp3');
+        fs.rmSync('./temp/currentSong.mp3');
     }
     catch (error) {
         console.error(error);
