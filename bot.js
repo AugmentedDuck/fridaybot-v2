@@ -21,7 +21,7 @@ const { token } = require('./.secrets/config.json');
 // ////////////////////////////////
 // LOGIN TO DISCORD
 // ////////////////////////////////
-const client = new Client({ intents: [GatewayIntentBits.Guilds] });
+const client = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildVoiceStates] });
 
 try {
     client.login(token);
