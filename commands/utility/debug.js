@@ -7,6 +7,10 @@
 
 const { SlashCommandBuilder } = require('discord.js');
 
+const { botMods } = require('../../.secrets/botMods.json');
+
+const APIs = [];
+
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('debug')
@@ -61,7 +65,32 @@ module.exports = {
             await interaction.reply(`Server: ${interaction.guild.name}\nTotal members: ${interaction.guild.memberCount}`);
         }
         else if (interaction.options.getSubcommand() === 'api') {
-            await interaction.reply('Not implemented yet!');
+
+            if (botMods.includes(interaction.user.id)) {
+                await interaction.reply(`Pinging ${APIs.length} APIs...`);
+
+                let apiResults = '';
+
+                for (const api of APIs) {
+                    apiResults += ('\n');
+                    try {
+                        const response = await fetch(api.url);
+                        apiResults += (`${api.name}: ${response.status} ${response.statusText}`);
+                    }
+                    catch (error) {
+                        apiResults += (`${api.name}: Error: ${error.message}`);
+                    }
+                }
+
+                if (apiResults == '') {
+                    apiResults = 'No APIs to ping.';
+                }
+
+                await interaction.editReply(apiResults);
+            }
+            else {
+                await interaction.reply('You don\'t have permission to use this command!');
+            }
         }
     },
 };
