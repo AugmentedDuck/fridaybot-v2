@@ -1,1 +1,0 @@
-// Leave a voice channel
