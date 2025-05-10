@@ -17,6 +17,7 @@
   },
   "homepage": "https://github.com/AugmentedDuck/fridaybot-v2#readme",
   "dependencies": {
+    "async-g-i-s": "^1.5.5",
     "discord.js": "^14.19.3"
   },
   "devDependencies": {

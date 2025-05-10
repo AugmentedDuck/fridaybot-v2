@@ -1,6 +1,11 @@
+// MISSING: AI generated image
+
 const { SlashCommandBuilder } = require('discord.js');
 
 const gis = require('async-g-i-s');
+
+const waifuAPI = 'https://api.waifu.im/search';
+
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('image')
@@ -24,11 +29,51 @@ module.exports = {
                         .setName('prompt')
                         .setDescription('The prompt to generate the image')
                         .setRequired(true)))
+        // This connects to https://api.waifu.im/
         .addSubcommand(subcommand =>
             subcommand
                 .setName('waifu')
                 .setDescription('Get an image of a waifu')
-
+                .addStringOption(option =>
+                    option
+                        .setName('tag')
+                        .setDescription('The tag to search for')
+                        .addChoices(
+                            { name: 'Maid', value: 'maid' },
+                            { name: 'Waifu', value: 'waifu' },
+                            { name: 'Marin Kitagawa', value: 'marin-kitagawa' },
+                            { name: 'Mori Calliope', value: 'mori-calliope' },
+                            { name: 'Raiden Shogun', value: 'raiden-shogun' },
+                            { name: 'Oppai', value: 'oppai' },
+                            { name: 'Selfie', value: 'selfies' },
+                            { name: 'Uniform', value: 'uniform' },
+                            { name: 'Kamisato Ayaka', value: 'kamisato-ayaka' },
+                        ))
+                .addBooleanOption(option =>
+                    option
+                        .setName('private')
+                        .setDescription('Whether only you can see the image')))
+        .addSubcommand(subcommand =>
+            subcommand
+                .setName('nsfw-waifu')
+                .setDescription('Get a NSFW image from the waifu API')
+                .addStringOption(option =>
+                    option
+                    .setName('tag')
+                    .setDescription('The tag to search for')
+                        .addChoices(
+                            { name: 'Ass', value: 'ass' },
+                            { name: 'Hentai', value: 'hentai' },
+                            { name: 'MILF', value: 'milf' },
+                            { name: 'Oral', value: 'oral' },
+                            { name: 'Titty fuck', value: 'paizuri' },
+                            { name: 'Softcore', value: 'ecchi' },
+                            { name: 'Erotic', value: 'ero' },
+                        ))
+                .addBooleanOption(option =>
+                    option
+                        .setName('private')
+                        .setDescription('Whether only you can see the image'))),
 
 // ////////////////////////////////////
 //
@@ -36,7 +81,12 @@ module.exports = {
 //
 // ////////////////////////////////////
     async execute(interaction) {
-       if (interaction.options.getSubcommand() === 'search') {
+        // ////////////////////////////
+        //
+        // SEARCH
+        //
+        // ////////////////////////////
+        if (interaction.options.getSubcommand() === 'search') {
            await interaction.deferReply();
             const query = interaction.options.getString('query');
             images = await (async () => {
@@ -57,8 +107,97 @@ module.exports = {
                 await interaction.editReply('No images found for the query: ' + query);
             }
         }
+        // ////////////////////////////
+        //
+        // WAIFU
+        //
+        // ////////////////////////////
+        else if (interaction.options.getSubcommand() === 'waifu') {
+            const tag = interaction.options.getString('tag');
+            const isPrivate = interaction.options.getBoolean('private');
+
+            if (isPrivate) {
+                await interaction.deferReply({ ephemeral: true });
+            }
+            else {
+                await interaction.deferReply();
+            }
+
+            await interaction.editReply(await getWaifuImage(tag, false));
+        }
+        // ////////////////////////////
+        //
+        // NSFW WAIFU
+        //
+        // ////////////////////////////
+        else if (interaction.options.getSubcommand() === 'nsfw-waifu') {
+            const tag = interaction.options.getString('tag');
+            const isPrivate = interaction.options.getBoolean('private');
+
+            if (isPrivate) {
+                await interaction.deferReply({ ephemeral: true });
+            }
+            else {
+                await interaction.deferReply();
+            }
+
+            await interaction.editReply(await getWaifuImage(tag, true));
+        }
         else {
             await interaction.reply('This command is not implemented yet.');
         }
     },
 };
+
+// ////////////////////////////////////
+//
+// Helper functions
+//
+// ////////////////////////////////////
+async function getWaifuImage(tag, isNSFW) {
+    let params = {};
+
+    if (!tag) {
+        params = {
+            is_nsfw: isNSFW,
+        };
+    }
+    else {
+        params = {
+            included_tags: tag,
+            is_nsfw: isNSFW,
+        };
+    }
+
+    const queryParams = new URLSearchParams();
+
+    for (const key in params) {
+        if (Array.isArray(params[key])) {
+            queryParams[key].forEach(value => {
+                queryParams.append(key, value);
+            });
+        }
+        else {
+            queryParams.set(key, params[key]);
+        }
+    }
+
+    const requestURL = `${waifuAPI}?${queryParams.toString()}`;
+
+    try {
+        const response = await fetch(requestURL);
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        else {
+            const data = await response.json();
+
+            return data.images[0].url;
+        }
+    }
+    catch (error) {
+        console.error('Error fetching image:', error);
+        return 'Error fetching image';
+    }
+}
