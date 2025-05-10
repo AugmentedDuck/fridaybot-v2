@@ -1,10 +1,3 @@
-// Should include the following:
-// - Generate a random number
-// - Generate a random string
-// - Generate a random color
-// - Simulate a coin flip
-// - Simulate a dice roll
-
 const { SlashCommandBuilder } = require('discord.js');
 
 const fs = require('fs');
@@ -59,12 +52,12 @@ module.exports = {
                         .setName('sides')
                         .setDescription('Number of sides on the dice')
                         .addChoices(
-                            { name: '4', value: 4 },
+                            // { name: '4', value: 4 },
                             { name: '6', value: 6 },
-                            { name: '8', value: 8 },
-                            { name: '10', value: 10 },
-                            { name: '12', value: 12 },
-                            { name: '20', value: 20 },
+                            // { name: '8', value: 8 },
+                            // { name: '10', value: 10 },
+                            // { name: '12', value: 12 },
+                            // { name: '20', value: 20 },
                         )))
         .addSubcommand(subcommand =>
             subcommand
