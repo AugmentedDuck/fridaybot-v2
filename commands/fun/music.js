@@ -9,9 +9,9 @@
 // - Clear the queue
 // - Shuffle the queue
 
-const { joinVoiceChannel, AudioPlayerStatus, createAudioPlayer, createAudioResource, StreamType, getVoiceConnection, VoiceConnectionStatus } = require('@discordjs/voice');
+const { joinVoiceChannel, AudioPlayerStatus, createAudioPlayer, createAudioResource } = require('@discordjs/voice');
 const { SlashCommandBuilder, ChannelType } = require('discord.js');
-// const fs = require('fs');
+const fs = require('fs');
 
 let currentSong = '';
 const queue = [];
