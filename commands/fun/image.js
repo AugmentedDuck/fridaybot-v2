@@ -180,6 +180,11 @@ module.exports = {
             const tag = interaction.options.getString('tag');
             const isPrivate = interaction.options.getBoolean('private');
 
+            if (!interaction.channel.nsfw) {
+                await interaction.reply('This command can only be used in NSFW channels.');
+                return;
+            }
+
             if (isPrivate) {
                 await interaction.deferReply({ ephemeral: true });
             }
@@ -207,6 +212,10 @@ module.exports = {
             seed = seed ? seed : -1;
             cfgScale = cfgScale ? cfgScale : 7;
             negativePrompt = negativePrompt ? negativePrompt : '';
+
+            if (interaction.channel.nsfw) {
+                negativePrompt += ', nsfw, pussy, naked, nude, nipples';
+            }
 
             const model = isAnime ? 'ponyDiffusionV6XL_v6StartWithThisOne' : 'epicphotogasm_ultimateFidelity';
 
