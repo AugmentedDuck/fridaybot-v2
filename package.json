@@ -22,7 +22,8 @@
     "async-g-i-s": "^1.5.5",
     "discord.js": "^14.19.3",
     "libsodium-wrappers": "^0.7.15",
-    "markov-chains-text": "^1.0.0"
+    "markov-chains-text": "^1.0.0",
+    "yt-dlp-wrap": "^2.3.12"
   },
   "devDependencies": {
     "@eslint/js": "^9.26.0",
