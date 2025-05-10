@@ -213,7 +213,7 @@ module.exports = {
             cfgScale = cfgScale ? cfgScale : 7;
             negativePrompt = negativePrompt ? negativePrompt : '';
 
-            if (interaction.channel.nsfw) {
+            if (!interaction.channel.nsfw) {
                 negativePrompt += ', nsfw, pussy, naked, nude, nipples';
             }
 
