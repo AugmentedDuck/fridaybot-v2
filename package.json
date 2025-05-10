@@ -18,7 +18,8 @@
   "homepage": "https://github.com/AugmentedDuck/fridaybot-v2#readme",
   "dependencies": {
     "async-g-i-s": "^1.5.5",
-    "discord.js": "^14.19.3"
+    "discord.js": "^14.19.3",
+    "markov-chains-text": "^1.0.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.26.0",

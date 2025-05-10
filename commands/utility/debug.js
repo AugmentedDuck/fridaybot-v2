@@ -10,7 +10,8 @@ const { SlashCommandBuilder } = require('discord.js');
 const { botMods } = require('../../.secrets/botMods.json');
 
 const APIs = [{ name: 'waifu.im', url: 'https://api.waifu.im/tags' },
-              { name: 'stable diffusion (localhost)', url: 'http://127.0.0.1:7860/info' }];
+              { name: 'stable diffusion (localhost)', url: 'http://127.0.0.1:7860/info' },
+              { name: 'The Color API', url: 'https://www.thecolorapi.com/id?hex=ffffff' }];
 
 module.exports = {
     data: new SlashCommandBuilder()
