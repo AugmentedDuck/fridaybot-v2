@@ -11,7 +11,10 @@
 
 const { joinVoiceChannel, AudioPlayerStatus, createAudioPlayer, createAudioResource } = require('@discordjs/voice');
 const { SlashCommandBuilder, ChannelType } = require('discord.js');
-const fs = require('fs');
+
+const youtubedl = require('youtube-dl-exec');
+// Implement search later
+// const yts = require('yt-search');
 
 let currentSong = '';
 const queue = [];
@@ -21,7 +24,7 @@ let connection;
 
 const player = createAudioPlayer();
 
-// const regexYTLink = /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|\S*?[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/g;
+const regexYTLink = /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:[^/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|\S*?[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/g;
 // const regexSpotifyLink = /(?:https?:\/\/)?(?:www\.)?(?:open\.spotify\.com\/track\/)([a-zA-Z0-9]{22})/g;
 
 
@@ -86,9 +89,7 @@ module.exports = {
                 createConnection(interaction);
             }
 
-            addSongToQueue(query);
-
-            await interaction.editReply('Added Song to queue');
+            addSongToQueue(query, interaction);
         }
         else if (interaction.options.getSubcommand() == 'toggle') {
             await interaction.deferReply();
@@ -120,30 +121,58 @@ module.exports = {
 //
 // ////////////////////////////////////
 
-function addSongToQueue(query) {
+async function addSongToQueue(query, interaction) {
     queue.push(query);
 
+    console.log(queue);
+
     if (queue.length == 1 && currentSong == '') {
-        moveSongToCurrentAndPlay();
+        moveSongToCurrentAndPlay(interaction);
+    }
+    else {
+        await interaction.editReply('Added Song to queue');
     }
 }
 
-async function moveSongToCurrentAndPlay() {
+async function moveSongToCurrentAndPlay(interaction) {
     currentSong = queue[0];
     queue.shift();
 
-    downloadSong(currentSong);
+    const path = await downloadSong(interaction);
 
-    const resource = createAudioResource('./temp/currentSong.mp3');
+    if (!path) { console.warn('[WARNING] NO PATH'); }
+
+    const resource = createAudioResource(path);
 
     connection.subscribe(player);
     player.play(resource);
 
 }
 
-async function downloadSong(query) {
-    // Magic to get song
-    return query;
+async function downloadSong(interaction) {
+    if (currentSong.match(regexYTLink)) {
+        try {
+            await youtubedl(currentSong, {
+                paths: './temp',
+                output: 'currentSong',
+                extractAudio: true,
+                audioFormat: 'opus',
+                forceOverwrites: true,
+            });
+
+            if (interaction) interaction.editReply('Playing Song');
+
+            return './temp/currentSong.opus';
+        }
+        catch (error) {
+            console.error(error);
+            if (interaction) interaction.editReply('Something went wrong');
+        }
+    }
+    else {
+        if (interaction) interaction.editReply('Unsupported Format');
+        console.warn('[WARN] Format not expected');
+    }
 }
 
 function createConnection(interaction) {
@@ -160,15 +189,10 @@ function createConnection(interaction) {
 }
 
 player.on(AudioPlayerStatus.Idle, async () => {
-    console.log('Switching Song');
-    try {
-        fs.rmSync('./temp/currentSong.mp3');
-    }
-    catch (error) {
-        console.error(error);
-    }
-
     if (queue.length > 0) {
         moveSongToCurrentAndPlay();
+    }
+    else if (queue.length == 0) {
+        currentSong = '';
     }
 });
