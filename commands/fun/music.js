@@ -103,24 +103,64 @@ module.exports = {
         }
         else if (interaction.options.getSubcommand() == 'toggle') {
             await interaction.deferReply();
+
+            if (player.state.status() == AudioPlayerStatus.Playing) {
+                player.pause();
+            }
+            else if (player.state.status() == AudioPlayerStatus.Paused) {
+                player.unpause();
+            }
         }
         else if (interaction.options.getSubcommand() == 'skip') {
-            await interaction.reply('Skipping...');
+
+            if (currentSong) {
+                await interaction.reply('Skipped Song');
+
+                currentSong = '';
+                player.stop();
+            }
+            else {
+                await interaction.reply('No song is playing');
+            }
         }
         else if (interaction.options.getSubcommand() == 'stop') {
-            await interaction.reply('Stopping...');
+            player.stop();
             connection.destroy();
             queue.length = 0;
             currentSong = '';
+            await interaction.reply('Stop playing music');
         }
         else if (interaction.options.getSubcommand() == 'queue') {
             await interaction.deferReply();
+
+            if (queue.length == 0) {
+                await interaction.editReply('No songs in queue');
+                return;
+            }
+
+            let queueString = '';
+
+            for (const song of queue) {
+                queueString += `- ${song}`;
+            }
+
+            await interaction.editReply('The current queue is:\n' + queueString);
+
         }
         else if (interaction.options.getSubcommand() == 'clear') {
-            await interaction.reply('Clearing queue...');
+            queue.length = 0;
+
+            await interaction.reply('Queue Cleared');
         }
         else if (interaction.options.getSubcommand() == 'shuffle') {
             await interaction.reply('Shuffling...');
+
+            for (let i = queue.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [queue[i], queue[j]] = [queue[j], queue[i]];
+            }
+
+            await interaction.editReply('Suffled the queue');
         }
     },
 };
