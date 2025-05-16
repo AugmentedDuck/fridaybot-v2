@@ -89,7 +89,17 @@ module.exports = {
                 createConnection(interaction);
             }
 
-            addSongToQueue(query, interaction);
+            queue.push(query);
+
+            if (queue.length == 1) {
+                moveSongToCurrent();
+                playSong();
+
+                interaction.editReply('Playing song');
+            }
+            else {
+                interaction.editReply('Added song to queue');
+            }
         }
         else if (interaction.options.getSubcommand() == 'toggle') {
             await interaction.deferReply();
@@ -121,24 +131,13 @@ module.exports = {
 //
 // ////////////////////////////////////
 
-async function addSongToQueue(query, interaction) {
-    queue.push(query);
-
-    console.log(queue);
-
-    if (queue.length == 1 && currentSong == '') {
-        moveSongToCurrentAndPlay(interaction);
-    }
-    else {
-        await interaction.editReply('Added Song to queue');
-    }
-}
-
-async function moveSongToCurrentAndPlay(interaction) {
+function moveSongToCurrent() {
     currentSong = queue[0];
     queue.shift();
+}
 
-    const path = await downloadSong(interaction);
+async function playSong() {
+    const path = await downloadSong();
 
     if (!path) { console.warn('[WARNING] NO PATH'); }
 
@@ -146,10 +145,9 @@ async function moveSongToCurrentAndPlay(interaction) {
 
     connection.subscribe(player);
     player.play(resource);
-
 }
 
-async function downloadSong(interaction) {
+async function downloadSong() {
     if (currentSong.match(regexYTLink)) {
         try {
             await youtubedl(currentSong, {
@@ -160,17 +158,13 @@ async function downloadSong(interaction) {
                 forceOverwrites: true,
             });
 
-            if (interaction) interaction.editReply('Playing Song');
-
             return './temp/currentSong.opus';
         }
         catch (error) {
             console.error(error);
-            if (interaction) interaction.editReply('Something went wrong');
         }
     }
     else {
-        if (interaction) interaction.editReply('Unsupported Format');
         console.warn('[WARN] Format not expected');
     }
 }
@@ -190,7 +184,8 @@ function createConnection(interaction) {
 
 player.on(AudioPlayerStatus.Idle, async () => {
     if (queue.length > 0) {
-        moveSongToCurrentAndPlay();
+        moveSongToCurrent();
+        playSong();
     }
     else if (queue.length == 0) {
         currentSong = '';
