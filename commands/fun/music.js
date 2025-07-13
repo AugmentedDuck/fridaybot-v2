@@ -1,20 +1,19 @@
 // Should include the following:
 // - Play a song from a URL
-// - Search for a song by name
-// - Pause the current song
-// - Resume the current song
-// - Skip to the next song in the queue
-// - Stop the current song
-// - Show the queue of songs
-// - Clear the queue
-// - Shuffle the queue
+//   - Spotify - Track, Album, Playlist
+//   - YouTube - Playlist
+//   - SoundCloud
 
 const { joinVoiceChannel, AudioPlayerStatus, createAudioPlayer, createAudioResource } = require('@discordjs/voice');
 const { SlashCommandBuilder, ChannelType } = require('discord.js');
+const { clientId, clientSecret } = require('../../.secrets/credentials.json');
+const fs = require('node:fs/promises');
+const path = require('node:path');
 
 const youtubedl = require('youtube-dl-exec');
-// Implement search later
-// const yts = require('yt-search');
+const yts = require('yt-search');
+
+const TOKEN_FILE = path.resolve('./temp/spotify_token.json');
 
 let currentSong = '';
 const queue = [];
@@ -25,8 +24,15 @@ let connection;
 const player = createAudioPlayer();
 
 const regexYTLink = /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:[^/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|\S*?[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/g;
-// const regexSpotifyLink = /(?:https?:\/\/)?(?:www\.)?(?:open\.spotify\.com\/track\/)([a-zA-Z0-9]{22})/g;
+const regexYTPlaylistLink = /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:playlist\?list=|watch\?v=))([a-zA-Z0-9_-]+)/g;
 
+const regexSoundCloudLink = /(?:https?:\/\/)?(?:www\.)?(?:soundcloud\.com\/)([a-zA-Z0-9_-]+)/g;
+
+const regexSpotifyTrackLink = /(?:https?:\/\/)?(?:www\.)?(?:open\.spotify\.com\/track\/)([a-zA-Z0-9]{22})/g;
+const regexSpotifyAlbumLink = /(?:https?:\/\/)?(?:www\.)?(?:open\.spotify\.com\/album\/)([a-zA-Z0-9]{22})/g;
+const regexSpotifyPlaylistLink = /(?:https?:\/\/)?(?:www\.)?(?:open\.spotify\.com\/playlist\/)([a-zA-Z0-9]{22})/g;
+
+let spotifyAccessToken;
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -78,6 +84,7 @@ module.exports = {
 //
 // ////////////////////////////////////
     async execute(interaction) {
+        spotifyAccessToken = await getValidSpotifyToken();
 
         if (interaction.options.getSubcommand() == 'play') {
             await interaction.deferReply();
@@ -89,7 +96,7 @@ module.exports = {
                 createConnection(interaction);
             }
 
-            queue.push(query);
+            addSongToQueue(query);
 
             if (queue.length == 1) {
                 moveSongToCurrent();
@@ -171,17 +178,41 @@ module.exports = {
 //
 // ////////////////////////////////////
 
+async function addSongToQueue(query) {
+    if (query.match(regexYTPlaylistLink)) {
+        try {
+            const playlist = await yts({ listId: query.slice(query.length - 34) });
+
+            playlist.videos.forEach(video => {
+                queue.push(video.url);
+            });
+        }
+        catch (error) {
+            console.error(error);
+        }
+    }
+    else if (currentSong.match(regexSpotifyAlbumLink)) {
+        console.log('NOT IMPLEMENTED YET');
+    }
+    else if (currentSong.match(regexSpotifyPlaylistLink)) {
+        console.log('NOT IMPLEMENTED YET');
+    }
+    else {
+        queue.push(query);
+    }
+}
+
 function moveSongToCurrent() {
     currentSong = queue[0];
     queue.shift();
 }
 
 async function playSong() {
-    const path = await downloadSong();
+    const pathToSong = await downloadSong();
 
-    if (!path) { console.warn('[WARNING] NO PATH'); }
+    if (!pathToSong) { console.warn('[WARNING] NO PATH'); }
 
-    const resource = createAudioResource(path);
+    const resource = createAudioResource(pathToSong);
 
     connection.subscribe(player);
     player.play(resource);
@@ -189,6 +220,7 @@ async function playSong() {
 
 async function downloadSong() {
     if (currentSong.match(regexYTLink)) {
+        console.log('[INFO] Downloading song from YT Link');
         try {
             await youtubedl(currentSong, {
                 paths: './temp',
@@ -204,8 +236,47 @@ async function downloadSong() {
             console.error(error);
         }
     }
+    else if (currentSong.match(regexSoundCloudLink)) {
+        console.log('[INFO] Downloading from SoundCloud Link');
+    }
+    else if (currentSong.match(regexSpotifyTrackLink)) {
+        console.log('[INFO] Downloading song from Spotify Track Link');
+        try {
+            const response = await fetch(`https://api.spotify.com/v1/tracks/${currentSong.slice(currentSong.length - 42, currentSong.length - 20)}`, {
+                headers: {
+                    'Authorization': `Bearer ${spotifyAccessToken}`,
+                },
+            });
+
+            const data = await response.json();
+
+            console.log(data);
+
+            const artist = data.artists[0].name;
+            const title = data.name;
+
+            currentSong = `${artist} - ${title}`;
+
+            return await downloadSong();
+        }
+        catch (error) {
+            console.error(error);
+        }
+    }
     else {
-        console.warn('[WARN] Format not expected');
+        console.log('[INFO] Searching song by name');
+        try {
+            const result = await yts(currentSong);
+            const video = result.videos[0];
+
+            currentSong = video.url;
+
+            return await downloadSong();
+
+        }
+        catch (error) {
+            console.error(error);
+        }
     }
 }
 
@@ -231,3 +302,45 @@ player.on(AudioPlayerStatus.Idle, async () => {
         currentSong = '';
     }
 });
+
+async function getSpotifyToken() {
+
+    const response = await fetch('https://accounts.spotify.com/api/token', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: new URLSearchParams({
+            'grant_type': 'client_credentials',
+            'client_id': clientId,
+            'client_secret': clientSecret,
+        }),
+    });
+
+    if (!response.ok) {
+        console.error('Failed to fetch Spotify token:', response.statusText);
+        return;
+    }
+
+    const data = await response.json();
+    data.timestamp = Date.now();
+    await fs.writeFile(TOKEN_FILE, JSON.stringify(data, null, 2), 'utf8');
+    return data.access_token;
+}
+
+async function getValidSpotifyToken() {
+    try {
+        const tokenData = JSON.parse(await fs.readFile(TOKEN_FILE, 'utf8'));
+        const tokenAge = Date.now() - tokenData.timestamp;
+
+        if (tokenAge > 3600 * 1000) {
+            return await getSpotifyToken();
+        }
+
+        return tokenData.access_token;
+    }
+    catch (error) {
+        console.error('Error reading Spotify token:', error);
+        return await getSpotifyToken();
+    }
+}
