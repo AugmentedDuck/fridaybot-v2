@@ -24,7 +24,7 @@ let connection;
 const player = createAudioPlayer();
 
 const regexYTLink = /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:[^/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|\S*?[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/g;
-const regexYTPlaylistLink = /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:playlist\?list=|watch\?v=))([a-zA-Z0-9_-]+)/g;
+const regexYTPlaylistLink = /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:\?|watch\?v=))([a-zA-Z0-9_-]+)(&list=)([a-zA-Z0-9_-]+)/g;
 
 const regexSoundCloudLink = /(?:https?:\/\/)?(?:www\.)?(?:soundcloud\.com\/)([a-zA-Z0-9_-]+)/g;
 
@@ -96,9 +96,9 @@ module.exports = {
                 createConnection(interaction);
             }
 
-            addSongToQueue(query);
+            await addSongToQueue(query);
 
-            if (queue.length == 1) {
+            if (queue.length == 1 && !currentSong) {
                 moveSongToCurrent();
                 playSong();
 
@@ -180,12 +180,18 @@ module.exports = {
 
 async function addSongToQueue(query) {
     if (query.match(regexYTPlaylistLink)) {
+        console.log('[INFO] Adding a YouTube playlist to queue');
         try {
             const playlist = await yts({ listId: query.slice(query.length - 34) });
 
             playlist.videos.forEach(video => {
-                queue.push(video.url);
+                queue.push('https://youtube.com/watch?v=' + video.videoId);
             });
+
+            if (queue.length == playlist.videos.length && !currentSong) {
+                moveSongToCurrent();
+                playSong();
+            }
         }
         catch (error) {
             console.error(error);
@@ -233,7 +239,7 @@ async function downloadSong() {
             return './temp/currentSong.opus';
         }
         catch (error) {
-            console.error("YouTube download failed: " + error);
+            console.error('[ERROR] YouTube download failed: ' + error);
         }
     }
     else if (currentSong.match(regexSoundCloudLink)) {
@@ -250,8 +256,6 @@ async function downloadSong() {
 
             const data = await response.json();
 
-            console.log(data);
-
             const artist = data.artists[0].name;
             const title = data.name;
 
@@ -260,7 +264,7 @@ async function downloadSong() {
             return await downloadSong();
         }
         catch (error) {
-            console.error(error);
+            console.error('[ERROR] ' + error);
         }
     }
     else {
@@ -275,7 +279,7 @@ async function downloadSong() {
 
         }
         catch (error) {
-            console.error(error);
+            console.error('[ERROR] ' + error);
         }
     }
 }
@@ -289,7 +293,7 @@ function createConnection(interaction) {
         });
     }
     catch (error) {
-        console.error(error);
+        console.error('[ERROR] ' + error);
     }
 }
 
@@ -318,7 +322,7 @@ async function getSpotifyToken() {
     });
 
     if (!response.ok) {
-        console.error('Failed to fetch Spotify token:', response.statusText);
+        console.error('[ERROR] Failed to fetch Spotify token:', response.statusText);
         return;
     }
 
@@ -340,7 +344,7 @@ async function getValidSpotifyToken() {
         return tokenData.access_token;
     }
     catch (error) {
-        console.error('Error reading Spotify token:', error);
+        console.error('[ERROR] Error reading Spotify token:', error);
         return await getSpotifyToken();
     }
 }
