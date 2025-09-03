@@ -233,7 +233,7 @@ async function downloadSong() {
             return './temp/currentSong.opus';
         }
         catch (error) {
-            console.error(error);
+            console.error("YouTube download failed: " + error);
         }
     }
     else if (currentSong.match(regexSoundCloudLink)) {
