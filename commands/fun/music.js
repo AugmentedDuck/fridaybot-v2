@@ -244,6 +244,20 @@ async function downloadSong() {
     }
     else if (currentSong.match(regexSoundCloudLink)) {
         console.log('[INFO] Downloading from SoundCloud Link');
+        try {
+            await youtubedl(currentSong, {
+                paths: './temp',
+                output: 'currentSong',
+                extractAudio: true,
+                audioFormat: 'opus',
+                forceOverwrites: true,
+            });
+
+            return './temp/currentSong.opus';
+        }
+        catch (error) {
+            console.error('[ERROR] SoundCloud download failed: ' + error);
+        }
     }
     else if (currentSong.match(regexSpotifyTrackLink)) {
         console.log('[INFO] Downloading song from Spotify Track Link');
