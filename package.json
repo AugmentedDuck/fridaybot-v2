@@ -20,7 +20,7 @@
     "@discordjs/opus": "^0.10.0",
     "@discordjs/voice": "^0.18.0",
     "async-g-i-s": "^1.5.5",
-    "discord.js": "^14.19.3",
+    "discord.js": "^14.22.1",
     "libsodium-wrappers": "^0.7.15",
     "markov-chains-text": "^1.0.0",
     "winston": "^3.18.3",
