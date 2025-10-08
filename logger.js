@@ -13,7 +13,7 @@ const logFormat = winston.format.printf(function(info) {
 
 const logger = winston.createLogger({
     transports: [
-        new winston.transports.Console({ format: winston.format.combine(winston.format.colorize(), logFormat) }),
+        new winston.transports.Console({ format: winston.format.combine(winston.format.colorize(), logFormat), level: 'debug' }),
 
         new winston.transports.File({ filename: `./logs/${startTimestamp}.log`, format: logFormat, level: 'debug' }),
         new winston.transports.File({ filename: './logs/exceptions.log', format: logFormat, level: 'warn', handleExceptions: true }),
