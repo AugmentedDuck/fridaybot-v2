@@ -7,7 +7,10 @@ const logger = require('../../logger.js');
 const APIs = [{ name: 'waifu.im', url: 'https://api.waifu.im/tags' },
               { name: 'stable diffusion (localhost)', url: 'http://127.0.0.1:7860/info' },
               { name: 'The Color API', url: 'https://www.thecolorapi.com/id?hex=ffffff' },
-              { name: 'JokeAPI', url: 'https://v2.jokeapi.dev/joke/Any' }];
+              { name: 'JokeAPI', url: 'https://v2.jokeapi.dev/joke/Any' },
+              { name: 'HTTP Cats', url: 'https://http.cat/200' },
+              { name: 'HTTP Ducks', url: 'https://httpducks.com/200.jpg' },
+              { name: 'HTTP Pizza', url: 'https://http.pizza/200.jpg' }];
 
 module.exports = {
     data: new SlashCommandBuilder()
