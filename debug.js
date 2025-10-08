@@ -1,3 +1,5 @@
 const { generateDependencyReport } = require('@discordjs/voice');
 
-console.log(generateDependencyReport());
+const logger = require('./logger.js');
+
+logger.debug(generateDependencyReport());

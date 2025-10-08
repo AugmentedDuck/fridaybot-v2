@@ -18,6 +18,8 @@ const path = require('node:path');
 const { Client, Collection, GatewayIntentBits } = require('discord.js');
 const { token } = require('./.secrets/config.json');
 
+const logger = require('./logger.js');
+
 // ////////////////////////////////
 // LOGIN TO DISCORD
 // ////////////////////////////////
@@ -27,7 +29,7 @@ try {
     client.login(token);
 }
 catch (error) {
-    console.error('Error logging in:', error);
+    logger.error('Error logging in:', error);
 }
 
 // ////////////////////////////////
@@ -50,7 +52,7 @@ for (const folder of commandFolders) {
             client.commands.set(command.data.name, command);
         }
         else {
-            console.warn(`[WARNING] The command at ${filePath} is missing a required "data" or "execute" property.`);
+            logger.warn(`The command at ${filePath} is missing a required "data" or "execute" property.`);
         }
     }
 }

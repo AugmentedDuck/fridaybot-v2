@@ -2,6 +2,8 @@
 
 const { SlashCommandBuilder, AttachmentBuilder } = require('discord.js');
 
+const logger = require('../../logger.js');
+
 const gis = require('async-g-i-s');
 const fs = require('fs');
 
@@ -133,7 +135,8 @@ module.exports = {
         //
         // ////////////////////////////
         if (interaction.options.getSubcommand() === 'search') {
-           await interaction.deferReply();
+            logger.verbose('Running "image search" command');
+            await interaction.deferReply();
             const query = interaction.options.getString('query');
             images = await (async () => {
                 try {
@@ -141,7 +144,7 @@ module.exports = {
                     return images;
                 }
                 catch (error) {
-                    console.error('Error fetching image:', error);
+                    logger.error('Error fetching image:', error);
                 }
             })();
 
@@ -159,6 +162,8 @@ module.exports = {
         //
         // ////////////////////////////
         else if (interaction.options.getSubcommand() === 'waifu') {
+            logger.verbose('Running "image waifu" command');
+
             const tag = interaction.options.getString('tag');
             const isPrivate = interaction.options.getBoolean('private');
 
@@ -177,6 +182,8 @@ module.exports = {
         //
         // ////////////////////////////
         else if (interaction.options.getSubcommand() === 'nsfw-waifu') {
+            logger.verbose('Running "image nsfw-waifu" command');
+
             const tag = interaction.options.getString('tag');
             const isPrivate = interaction.options.getBoolean('private');
 
@@ -200,6 +207,8 @@ module.exports = {
         //
         // ////////////////////////////
         else if (interaction.options.getSubcommand() === 'ai') {
+            logger.verbose('Running "image ai" command');
+
             const prompt = interaction.options.getString('prompt');
             const width = interaction.options.getInteger('width');
             const height = interaction.options.getInteger('height');
@@ -261,7 +270,7 @@ module.exports = {
                 await interaction.editReply({ content: 'Here is your image:', files: [attachment] });
             }
             catch (error) {
-                console.error('Error fetching image:', error);
+                logger.error('Error fetching image:', error);
                 await interaction.editReply('Error fetching image');
             }
         }
@@ -316,7 +325,7 @@ async function getWaifuImage(tag, isNSFW) {
         }
     }
     catch (error) {
-        console.error('Error fetching image:', error);
+        logger.error('Error fetching image:', error);
         return 'Error fetching image';
     }
 }

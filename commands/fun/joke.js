@@ -1,5 +1,7 @@
 const { SlashCommandBuilder } = require('discord.js');
 
+const logger = require('../../logger.js');
+
 const jokeAPI = 'https://v2.jokeapi.dev/joke/Any';
 
 module.exports = {
@@ -17,6 +19,8 @@ module.exports = {
 //
 // ////////////////////////////////////
     async execute(interaction) {
+        logger.verbose('Running "joke" command');
+
         await interaction.deferReply();
 
         const isSafe = interaction.options.getBoolean('safe');
@@ -27,7 +31,7 @@ module.exports = {
             const response = await fetch(fullURL);
             const data = await response.json();
 
-            console.log(data);
+            logger.debug(data);
 
             if (data.type == 'single') {
                 await interaction.editReply(data.joke);
@@ -40,7 +44,7 @@ module.exports = {
             }
         }
         catch (error) {
-            console.error(error);
+            logger.error(error);
             await interaction.editReply('I have a problem with 404 jokes,\nI don\'t find them funny\n*Something went wrong:* ' + error.message);
         }
     },

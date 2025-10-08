@@ -10,6 +10,8 @@ const { clientId, clientSecret } = require('../../.secrets/credentials.json');
 const fs = require('node:fs/promises');
 const path = require('node:path');
 
+const logger = require('../../logger.js');
+
 const youtubedl = require('youtube-dl-exec');
 const yts = require('yt-search');
 
@@ -87,6 +89,7 @@ module.exports = {
         spotifyAccessToken = await getValidSpotifyToken();
 
         if (interaction.options.getSubcommand() == 'play') {
+            logger.verbose('Running "music play" command');
             await interaction.deferReply();
 
             const query = interaction.options.getString('query');
@@ -97,6 +100,8 @@ module.exports = {
             }
 
             await addSongToQueue(query);
+
+            logger.info('queue lenght is now: ' + queue.length);
 
             if (queue.length == 1 && !currentSong) {
                 moveSongToCurrent();
@@ -109,6 +114,8 @@ module.exports = {
             }
         }
         else if (interaction.options.getSubcommand() == 'toggle') {
+            logger.verbose('Running "music toggle" command');
+
             await interaction.deferReply();
 
             if (player.state.status() == AudioPlayerStatus.Playing) {
@@ -119,6 +126,7 @@ module.exports = {
             }
         }
         else if (interaction.options.getSubcommand() == 'skip') {
+            logger.verbose('Running "music skip" command');
 
             if (currentSong) {
                 await interaction.reply('Skipped Song');
@@ -131,6 +139,8 @@ module.exports = {
             }
         }
         else if (interaction.options.getSubcommand() == 'stop') {
+            logger.verbose('Running "music stop" command');
+
             player.stop();
             connection.destroy();
             queue.length = 0;
@@ -138,6 +148,8 @@ module.exports = {
             await interaction.reply('Stop playing music');
         }
         else if (interaction.options.getSubcommand() == 'queue') {
+            logger.verbose('Running "music queue" command');
+
             await interaction.deferReply();
 
             if (queue.length == 0) {
@@ -151,15 +163,22 @@ module.exports = {
                 queueString += `- ${song}`;
             }
 
+            logger.info('Queue is: ' + queueString);
+
+
             await interaction.editReply('The current queue is:\n' + queueString);
 
         }
         else if (interaction.options.getSubcommand() == 'clear') {
+            logger.verbose('Running "music clear" command');
+
             queue.length = 0;
 
             await interaction.reply('Queue Cleared');
         }
         else if (interaction.options.getSubcommand() == 'shuffle') {
+            logger.verbose('Running "music shuffle" command');
+
             await interaction.reply('Shuffling...');
 
             for (let i = queue.length - 1; i > 0; i--) {
@@ -180,7 +199,7 @@ module.exports = {
 
 async function addSongToQueue(query) {
     if (query.match(regexYTPlaylistLink)) {
-        console.log('[INFO] Adding a YouTube playlist to queue');
+        logger.info('Adding a YouTube playlist to queue');
         try {
             const playlist = await yts({ listId: query.slice(query.length - 34) });
 
@@ -194,14 +213,14 @@ async function addSongToQueue(query) {
             }
         }
         catch (error) {
-            console.error(error);
+            logger.error(error);
         }
     }
     else if (currentSong.match(regexSpotifyAlbumLink)) {
-        console.log('NOT IMPLEMENTED YET');
+        logger.warn('NOT IMPLEMENTED YET');
     }
     else if (currentSong.match(regexSpotifyPlaylistLink)) {
-        console.log('NOT IMPLEMENTED YET');
+        logger.warn('NOT IMPLEMENTED YET');
     }
     else {
         queue.push(query);
@@ -216,7 +235,7 @@ function moveSongToCurrent() {
 async function playSong() {
     const pathToSong = await downloadSong();
 
-    if (!pathToSong) { console.warn('[WARNING] NO PATH'); }
+    if (!pathToSong) { logger.warn('NO PATH'); }
 
     const resource = createAudioResource(pathToSong);
 
@@ -226,7 +245,7 @@ async function playSong() {
 
 async function downloadSong() {
     if (currentSong.match(regexYTLink)) {
-        console.log('[INFO] Downloading song from YT Link');
+        logger.info('Downloading song from YT Link');
         try {
             await youtubedl(currentSong, {
                 paths: './temp',
@@ -239,11 +258,11 @@ async function downloadSong() {
             return './temp/currentSong.opus';
         }
         catch (error) {
-            console.error('[ERROR] YouTube download failed: ' + error);
+            logger.error('YouTube download failed: ' + error);
         }
     }
     else if (currentSong.match(regexSoundCloudLink)) {
-        console.log('[INFO] Downloading from SoundCloud Link');
+        logger.info('Downloading from SoundCloud Link');
         try {
             await youtubedl(currentSong, {
                 paths: './temp',
@@ -256,11 +275,11 @@ async function downloadSong() {
             return './temp/currentSong.opus';
         }
         catch (error) {
-            console.error('[ERROR] SoundCloud download failed: ' + error);
+            logger.error('SoundCloud download failed: ' + error);
         }
     }
     else if (currentSong.match(regexSpotifyTrackLink)) {
-        console.log('[INFO] Downloading song from Spotify Track Link');
+        logger.info('Downloading song from Spotify Track Link');
         try {
             const response = await fetch(`https://api.spotify.com/v1/tracks/${currentSong.slice(currentSong.length - 42, currentSong.length - 20)}`, {
                 headers: {
@@ -278,11 +297,11 @@ async function downloadSong() {
             return await downloadSong();
         }
         catch (error) {
-            console.error('[ERROR] ' + error);
+            logger.error(error);
         }
     }
     else {
-        console.log('[INFO] Searching song by name');
+        logger.info('Searching song by name');
         try {
             const result = await yts(currentSong);
             const video = result.videos[0];
@@ -293,7 +312,7 @@ async function downloadSong() {
 
         }
         catch (error) {
-            console.error('[ERROR] ' + error);
+            logger.error(error);
         }
     }
 }
@@ -307,11 +326,12 @@ function createConnection(interaction) {
         });
     }
     catch (error) {
-        console.error('[ERROR] ' + error);
+        logger.error(error);
     }
 }
 
 player.on(AudioPlayerStatus.Idle, async () => {
+    logger.verbose('Going to next song');
     if (queue.length > 0) {
         moveSongToCurrent();
         playSong();
@@ -336,7 +356,7 @@ async function getSpotifyToken() {
     });
 
     if (!response.ok) {
-        console.error('[ERROR] Failed to fetch Spotify token:', response.statusText);
+        logger.error('Failed to fetch Spotify token:', response.statusText);
         return;
     }
 
@@ -358,7 +378,7 @@ async function getValidSpotifyToken() {
         return tokenData.access_token;
     }
     catch (error) {
-        console.error('[ERROR] Error reading Spotify token:', error);
+        logger.error('Error reading Spotify token:', error);
         return await getSpotifyToken();
     }
 }

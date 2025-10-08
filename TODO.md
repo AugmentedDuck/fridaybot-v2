@@ -1,7 +1,8 @@
 # TODO LIST
-- ## WIP commands 
+- ## WIP 
     - Spotify playlist/albums (commands/fun/music.js)
     - Send HTTP Status pictures in ping (commands/utility/debug.js)
+    - Logging
 
 - ## New commands
     - Saving different information [e.g. birthdays or events] (server based)
@@ -18,5 +19,4 @@
 
 
 - ## Other
-    - Logging
     - Crash-logs

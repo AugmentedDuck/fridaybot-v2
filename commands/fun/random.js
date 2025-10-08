@@ -3,6 +3,8 @@ const { SlashCommandBuilder } = require('discord.js');
 const fs = require('fs');
 const Text = require('markov-chains-text').default;
 
+const logger = require('../../logger.js');
+
 const colorAPI = 'https://www.thecolorapi.com/id?hex=';
 
 const sampleText = fs.readFileSync('./temp/babbler.txt', 'utf-8');
@@ -74,10 +76,14 @@ module.exports = {
             const min = interaction.options.getInteger('min');
             const max = interaction.options.getInteger('max');
 
+            logger.verbose(`Running "random number" command, MAX: ${max}, MIN: ${min}`);
+
             const randomNumber = Math.floor(Math.random() * (max - min + 1)) + min;
             await interaction.reply(`Random number between ${min} and ${max}: ${randomNumber}`);
         }
         else if (interaction.options.getSubcommand() === 'string') {
+            logger.verbose('Running "random string" command');
+
             const length = interaction.options.getInteger('length');
             const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
             let randomString = '';
@@ -89,6 +95,8 @@ module.exports = {
             await interaction.reply(`Random string of length ${length}:\n${randomString}`);
         }
         else if (interaction.options.getSubcommand() === 'color') {
+            logger.verbose('Running "random color" command');
+
             const randomColor = Math.floor(Math.random() * 16777215).toString(16);
             await interaction.reply(`Random color:\n#${randomColor}`);
 
@@ -104,11 +112,13 @@ module.exports = {
                 await interaction.followUp('Name:' + data.name.value + '\nhttps://singlecolorimage.com/get/' + randomColor + '/400x400');
             }
             catch (error) {
-                console.error(error);
+                logger.error(error);
                 await interaction.followUp({ content: 'There was an error while fetching the color image', ephemeral: true });
             }
         }
         else if (interaction.options.getSubcommand() === 'coin') {
+            logger.verbose('Running "random coin" command');
+
             const rng = Math.round(Math.random());
 
             const result = rng == 0 ? 'https://tenor.com/view/coin-flip-coin-flip-heads-coin-flip-head-gif-27075791' : 'https://tenor.com/view/coin-flip-coin-flip-tails-coin-flip-tail-gif-27075788';
@@ -117,6 +127,8 @@ module.exports = {
         }
         else if (interaction.options.getSubcommand() === 'dice') {
             let size = interaction.options.getInteger('sides');
+
+            logger.verbose('Running "random dice" command with ' + size + ' sides');
 
             size = size ? size : 6;
 
@@ -137,6 +149,8 @@ module.exports = {
             }
         }
         else if (interaction.options.getSubcommand() === 'text') {
+            logger.verbose('Running "random text" command');
+
             const sentence = babbleText.makeSentence();
 
             await interaction.reply('Here is a random sentence: ' + sentence);
