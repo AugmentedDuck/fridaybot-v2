@@ -7,7 +7,7 @@ const logger = require('../../logger.js');
 
 const colorAPI = 'https://www.thecolorapi.com/id?hex=';
 
-const sampleText = fs.readFileSync('./temp/babbler.txt', 'utf-8');
+const sampleText = fs.readFileSync('./.libs/babbler.txt', 'utf-8');
 const babbleText = new Text(sampleText);
 
 module.exports = {
