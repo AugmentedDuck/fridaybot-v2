@@ -81,26 +81,67 @@ module.exports = {
                 logger.info('User is authorized to run command');
                 await interaction.reply(`Pinging ${APIs.length} APIs...`);
 
-                let apiResults = '';
+                const apiResults = [];
 
                 for (const api of APIs) {
-                    apiResults += ('\n');
                     try {
                         const response = await fetch(api.url);
-                        apiResults += (`${api.name}: ${response.status} (${response.statusText})`);
+                        apiResults.push([api.name, response.status, response.statusText]);
                     }
                     catch (error) {
-                        apiResults += (`${api.name}: ${error.message}`);
+                        apiResults.push([api.name, '0', error.message]);
                     }
-                }
-
-                if (apiResults == '') {
-                    apiResults = 'No APIs to ping.';
                 }
 
                 logger.debug(apiResults);
 
-                await interaction.editReply(apiResults);
+                let apiResultsString = '';
+                const statusCodes = [];
+
+                for (const response of apiResults) {
+
+                    if (response[1] == '0') {
+                        apiResultsString += `${response[0]}: ERROR (${response[2]})\n`;
+                        continue;
+                    }
+
+                    if (!statusCodes.includes(response[1])) {
+                        statusCodes.push(response[1]);
+                    }
+
+                    apiResultsString += `${response[0]}: ${response[1]}, ${response[2]}\n`;
+                }
+
+                for (const statusCode of statusCodes) {
+                    const random = Math.floor(Math.random() * (4));
+
+                    try {
+                        switch (random) {
+                            case 1:
+                                apiResultsString += 'https://http.cat/' + statusCode;
+                                break;
+                            case 2:
+                                apiResultsString += 'https://httpducks.com/' + statusCode + '.jpg';
+                                break;
+                            case 3:
+                                apiResultsString += 'https://http.pizza/' + statusCode + '.jpg';
+                                break;
+                            default:
+                                break;
+                        }
+                    }
+                    catch (error) {
+                        logger.error(error);
+                    }
+                }
+
+                if (apiResults.length == 0) {
+                    apiResultsString = 'No APIs to ping.';
+                }
+
+                logger.debug(apiResultsString);
+
+                await interaction.editReply(apiResultsString);
             }
             else {
                 logger.info('User is NOT authorized to run command');
