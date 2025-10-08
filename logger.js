@@ -16,7 +16,7 @@ const logger = winston.createLogger({
         new winston.transports.Console({ format: winston.format.combine(winston.format.colorize(), logFormat) }),
 
         new winston.transports.File({ filename: `./logs/${startTimestamp}.log`, format: logFormat, level: 'debug' }),
-        new winston.transports.File({ filename: './logs/exceptions.log', format: logFormat, level: 'warn' }),
+        new winston.transports.File({ filename: './logs/exceptions.log', format: logFormat, level: 'warn', handleExceptions: true }),
     ],
 });
 
