@@ -218,7 +218,33 @@ async function addSongToQueue(query) {
         }
     }
     else if (query.match(regexSpotifyAlbumLink)) {
-        logger.warn('NOT IMPLEMENTED YET');
+        logger.verbose('Looping through spotify album');
+        try {
+            logger.debug(query.slice(31, 34 + 22));
+            const response = await fetch(`https://api.spotify.com/v1/albums/${query.slice(31, 31 + 22)}/tracks?limit=50`, {
+                headers: {
+                    'Authorization': `Bearer ${spotifyAccessToken}`,
+                },
+            });
+
+            const data = await response.json();
+
+            const tracks = data.items;
+
+            for await (const track of tracks) {
+                logger.verbose(`Added: "${track.artists[0].name} - ${track.name}" to queue`);
+                queue.push(`${track.artists[0].name} - ${track.name}`);
+            }
+
+            if (queue.length == items.length && !currentSong) {
+                logger.verbose('Starting first song after album');
+                moveSongToCurrent();
+                playSong();
+            }
+        }
+        catch (error) {
+            logger.error('Loading spotify album failed: ' + error);
+        }
     }
     else if (query.match(regexSpotifyPlaylistLink)) {
         logger.verbose('Looping through spotify playlist');
