@@ -216,11 +216,11 @@ async function addSongToQueue(query) {
             logger.error(error);
         }
     }
-    else if (currentSong.match(regexSpotifyAlbumLink)) {
+    else if (query.match(regexSpotifyAlbumLink)) {
         logger.warn('NOT IMPLEMENTED YET');
     }
-    else if (currentSong.match(regexSpotifyPlaylistLink)) {
         logger.warn('NOT IMPLEMENTED YET');
+    else if (query.match(regexSpotifyPlaylistLink)) {
     }
     else {
         queue.push(query);
