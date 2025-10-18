@@ -1,9 +1,8 @@
 # TODO LIST
 - ## WIP 
-    - Spotify playlist/albums (commands/fun/music.js)
-
-- ## New commands
     - Saving different information [e.g. birthdays or events] (server based)
+    
+- ## New commands
     - Current weather [e.g water temp, air temp, and wind speed]
     - Moderation
         - Kick
