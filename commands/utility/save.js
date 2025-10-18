@@ -1,4 +1,5 @@
 const { SlashCommandBuilder } = require('discord.js');
+const fs = require('fs');
 
 const logger = require('../../logger.js');
 
@@ -47,7 +48,7 @@ module.exports = {
                         { name: 'August', value: 8 },
                         { name: 'September', value: 9 },
                         { name: 'October', value: 10 },
-                        { name: 'Nevember', value: 11 },
+                        { name: 'November', value: 11 },
                         { name: 'December', value: 12 })
                     .setRequired(true))
                 .addIntegerOption(option =>
@@ -114,6 +115,11 @@ module.exports = {
                     .setChoices(
                         { name: 'other', value: 'other' },
                         { name: 'quote', value: 'quote' })
+                    .setRequired(true))
+                .addBooleanOption(option =>
+                    option
+                    .setName('random')
+                    .setDescription('Should only one random data be chosen')
                     .setRequired(true)))
             .addSubcommand(subcommand =>
                 subcommand
@@ -139,30 +145,98 @@ module.exports = {
         logger.verbose('Running "save" command');
         await interaction.deferReply();
 
+        const server = interaction.guild.id;
+
         if (interaction.options.getSubcommandGroup() === 'event') {
             if (interaction.options.getSubcommand() === 'create') {
-                interaction.editReply('This is not yet supported');
+                const type = interaction.options.getString('type');
+                const name = interaction.options.getString('name');
+
+                const year = interaction.options.getInteger('year');
+                const month = interaction.options.getInteger('month');
+                const day = interaction.options.getInteger('day');
+
+                const isRepeating = interaction.options.getBoolean('repeat');
+
+                const timestamp = Math.round(new Date().setFullYear(year, month - 1, day) / 1000);
+
+                await interaction.editReply(`This is not yet supported, you entered:\n-Type: ${type}\n-Name: ${name}\n-Time: <t:${timestamp}:D> <t:${timestamp}:R>\n-Repeating: ${isRepeating}\n`);
             }
             else if (interaction.options.getSubcommand() === 'list') {
-                interaction.editReply('This is not yet supported');
+                const type = interaction.options.getString('type');
+
+                await interaction.editReply(`This is not yet supported, you entered:\n-Type: ${type}`);
             }
             else if (interaction.options.getSubcommand() === 'next') {
-                interaction.editReply('This is not yet supported');
+                const type = interaction.options.getString('type');
+
+                await interaction.editReply(`This is not yet supported, you entered:\n-Type: ${type}`);
             }
             else {
                 logger.warn('User got to an unreachable spot: ' + interaction.options.getSubcommandGroup() + ' -> ' + interaction.options.getSubcommand());
-                interaction.editReply('Your not supposed to get here');
+                await interaction.editReply('Your not supposed to get here');
             }
         }
         else if (interaction.options.getSubcommandGroup() === 'data') {
             if (interaction.options.getSubcommand() === 'create') {
-                interaction.editReply('This is not yet supported');
+                const data = interaction.options.getString('data');
+
+                await interaction.editReply(`This is not yet supported, you entered:\n-Data: ${data}`);
             }
             else if (interaction.options.getSubcommand() === 'list') {
-                interaction.editReply('This is not yet supported');
+                const type = interaction.options.getString('type');
+                const isAll = !interaction.options.getBoolean('random');
+
+
+                if (type == 'quote') {
+                    if (isAll) {
+                        try {
+                            const quotes = fs.readFileSync(`./persistent/data/quotes/${server}.dat`, 'utf-8');
+                            if (quotes) {
+                                await interaction.editReply(quotes);
+                            }
+                            else {
+                                await interaction.editReply('There are no saved quotes');
+                            }
+                        }
+                        catch (error) {
+                            logger.error('Something went wrong fetching quotes: ' + error);
+                        }
+                    }
+                    else {
+                        try {
+                            const quotes = fs.readFileSync(`./persistent/data/quotes/${server}.dat`, 'utf-8');
+                            if (quotes) {
+                                const quotesList = quotes.split('\n');
+
+                                await interaction.editReply(quotesList[Math.floor(Math.random() * (quotesList.length - 1))]);
+                            }
+                            else {
+                                await interaction.editReply('There are no saved quotes');
+                            }
+                        }
+                        catch (error) {
+                            logger.error('Something went wrong fetching quotes: ' + error);
+                        }
+                    }
+                }
+                else {
+                    await interaction.editReply(`This is not yet supported, you entered:\n-Type: ${type}`);
+                }
+
             }
             else if (interaction.options.getSubcommand() === 'quote') {
-                interaction.editReply('This is not yet supported');
+                const quote = interaction.options.getString('quote');
+                const author = interaction.options.getUser('author');
+
+                await interaction.editReply(`"${quote}" - ${author}`);
+
+                try {
+                    fs.appendFileSync(`./persistent/data/quotes/${server}.dat`, `"${quote}" - ${author}\n`);
+                }
+                catch (error) {
+                    logger.error('Something went wrong saving a quote' + error);
+                }
             }
             else {
                 logger.warn('User got to an unreachable spot: ' + interaction.options.getSubcommandGroup() + ' -> ' + interaction.options.getSubcommand());
@@ -173,6 +247,7 @@ module.exports = {
             logger.warn('User got to an unreachable spot: ' + interaction.options.getSubcommandGroup());
             interaction.editReply('Your not supposed to get here');
         }
+
         return;
     },
 };
