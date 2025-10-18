@@ -219,8 +219,33 @@ async function addSongToQueue(query) {
     else if (query.match(regexSpotifyAlbumLink)) {
         logger.warn('NOT IMPLEMENTED YET');
     }
-        logger.warn('NOT IMPLEMENTED YET');
     else if (query.match(regexSpotifyPlaylistLink)) {
+        logger.verbose('Looping through spotify playlist');
+        try {
+            const response = await fetch(`https://api.spotify.com/v1/playlists/${query.slice(34, 34 + 22)}/tracks?fields=items%28track%28name%2Cartists%28name%29%29%29`, {
+                headers: {
+                    'Authorization': `Bearer ${spotifyAccessToken}`,
+                },
+            });
+
+            const data = await response.json();
+
+            const tracks = data.items;
+
+            for await (const item of tracks) {
+                const track = item.track;
+                logger.verbose(`Adding: "${track.artists[0].name} - ${track.name}" to queue`);
+                queue.push(`${track.artists[0].name} - ${track.name}`);
+            }
+
+            if (queue.length == playlist.videos.length && !currentSong) {
+                moveSongToCurrent();
+                playSong();
+            }
+        }
+        catch (error) {
+            logger.error(error);
+        }
     }
     else {
         queue.push(query);
