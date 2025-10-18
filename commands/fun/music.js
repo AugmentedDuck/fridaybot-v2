@@ -208,12 +208,13 @@ async function addSongToQueue(query) {
             });
 
             if (queue.length == playlist.videos.length && !currentSong) {
+                logger.verbose('Starting first song after playlist');
                 moveSongToCurrent();
                 playSong();
             }
         }
         catch (error) {
-            logger.error(error);
+            logger.error('YouTube playlist loading failed: ' + error);
         }
     }
     else if (query.match(regexSpotifyAlbumLink)) {
@@ -230,21 +231,22 @@ async function addSongToQueue(query) {
 
             const data = await response.json();
 
-            const tracks = data.items;
+            const items = data.items;
 
-            for await (const item of tracks) {
+            for await (const item of items) {
                 const track = item.track;
-                logger.verbose(`Adding: "${track.artists[0].name} - ${track.name}" to queue`);
                 queue.push(`${track.artists[0].name} - ${track.name}`);
+                logger.verbose(`Added: "${track.artists[0].name} - ${track.name}" to queue`);
             }
 
-            if (queue.length == playlist.videos.length && !currentSong) {
+            if (queue.length == items.length && !currentSong) {
+                logger.verbose('Starting first song after playlist');
                 moveSongToCurrent();
                 playSong();
             }
         }
         catch (error) {
-            logger.error(error);
+            logger.error('Loading spotify playlist failed: ' + error);
         }
     }
     else {
@@ -253,6 +255,7 @@ async function addSongToQueue(query) {
 }
 
 function moveSongToCurrent() {
+    logger.verbose('Moving next song to current');
     currentSong = queue[0];
     queue.shift();
 }
@@ -322,7 +325,7 @@ async function downloadSong() {
             return await downloadSong();
         }
         catch (error) {
-            logger.error(error);
+            logger.error('Spotify track download falied: ' + error);
         }
     }
     else {
@@ -337,7 +340,7 @@ async function downloadSong() {
 
         }
         catch (error) {
-            logger.error(error);
+            logger.error('Song search failed: ' + error);
         }
     }
 }
