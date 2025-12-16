@@ -28,7 +28,7 @@ module.exports = {
 
         if (today != 1) {
             await interaction.editReply('https://tenor.com/view/no-no-no-not-today-nah-nope-no-way-gif-16392985');
-            // return;
+            return;
         }
 
         try {
