@@ -45,14 +45,14 @@ module.exports = {
             logger.error('Something went wrong getting weather:', error);
         }
 
-        const random = getRandomNumber(4);
+        const random = getRandomNumber(5);
 
-        // const random = 3;
+        // const random = 4;
 
         let prompt = '';
         switch (random) {
             case 0:
-                prompt = `Sound like yu really don't want to do it. We are swimming tomorrow at ${swimPlace} at ${swimTime}.\n${report}\nDon't just list the weather forecast. Sound very Emo. Use unicode emojies`;
+                prompt = `Sound like yu really don't want to do it. We are swimming tomorrow at ${swimPlace} at ${swimTime}.\n${report}\nDon't just list the weather forecast. Sound very Emo. Use an absurd amount of unicode emojies`;
                 break;
             case 1:
                 prompt = `Make it sound like a mission impossible mission. We are swimming tomorrow at ${swimPlace} at ${swimTime}.\n${report}\nDon't just list the weather forecast. Be way to serious. Make sure to give the consequences if the mission fails`;
@@ -62,6 +62,9 @@ module.exports = {
                 break;
             case 3:
                 prompt = `You are a military drill sergeant. Make an annoucement to useless privates that we are swimming tomorrow at ${swimPlace} at ${swimTime}.\n${report}\nDon't just list the weather forecast. Be very agressive and make up an over the top punishment for not showing up`;
+                break;
+            case 4:
+                prompt = `Write a song about: we are swimming tomorrow at ${swimPlace} at ${swimTime}.\n${report}\n\nIt should be very gen-z. Include unicode emojies for flair`;
                 break;
             default:
                 prompt = `Use a lot of unicode emojies. Generate a message for a group that we are swimming tomorrow at ${swimPlace} (the sea) at ${swimTime}.\n${report}\nDon't just list the weather forecast.\nMake sure to make its over the top brainrot. Make it theatening and hint that there will be consequences if you dont show up, make up a over the top consequence that is not swimming related.`;
