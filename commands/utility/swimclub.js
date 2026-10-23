@@ -28,13 +28,14 @@ module.exports = {
 
         await interaction.deferReply();
 
+/*
         const today = new Date().getDay();
 
         if (today != 1) {
             await interaction.editReply('https://tenor.com/view/no-no-no-not-today-nah-nope-no-way-gif-16392985');
             return;
         }
-
+*/
         let report;
 
         try {
